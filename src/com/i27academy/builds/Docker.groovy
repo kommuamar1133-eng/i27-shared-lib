@@ -17,19 +17,17 @@ class Docker {
 
     //
     def sonar(appName){
-        return {
-            echo "Starting Sonar Scan"
-            withSonarQubeEnv('SonarQube'){  // The name you saved in system under manage jenkins
-                jenkins.sh """
-                    mvn sonar:sonar \
-                        -Dsonar.projectkey=i27-eureka \
-                        -Dsonar.host.url=${env.SONAR_URL} \
-                        -Dsonar.login=${SONAR_TOKEN}
-                """
-            }  
-            timeout (time: 2, unit: 'MINUTES'){
-                waitForQualityGate abortPipeline: true
-            }
+        echo "Starting Sonar Scan"
+        withSonarQubeEnv('SonarQube'){  // The name you saved in system under manage jenkins
+            jenkins.sh """
+                mvn sonar:sonar \
+                    -Dsonar.projectkey=i27-eureka \
+                    -Dsonar.host.url=${env.SONAR_URL} \
+                    -Dsonar.login=${SONAR_TOKEN}
+            """
+        }  
+        timeout (time: 2, unit: 'MINUTES'){
+            waitForQualityGate abortPipeline: true
         }
     }   
 

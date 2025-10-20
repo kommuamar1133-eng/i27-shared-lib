@@ -49,7 +49,7 @@ def call(Map pipelineparams){
             jdk 'JDK-17'
         }
         environment {
-            APPLICATION_NAME = ${pipelineParams.appName}
+            APPLICATION_NAME = "${pipelineParams.appName}"
             SONAR_TOKEN = credentials('sonar_creds')
             SONAR_URL = "http://34.46.97.238:9000"
             // https://www.jenkins.io/doc/pipeline/steps/pipeline-utility-steps/#readmavenpom-read-a-maven-project-file

@@ -14,23 +14,29 @@ class Docker {
             mvn clean package -DskipTests=true
         """  
     }
-
-    //
-    def sonar(appName){
-        echo "Starting Sonar Scan"
-        withSonarQubeEnv('SonarQube'){  // The name you saved in system under manage jenkins
-            jenkins.sh """
-                mvn sonar:sonar \
-                    -Dsonar.projectkey=i27-eureka \
-                    -Dsonar.host.url=${env.SONAR_URL} \
-                    -Dsonar.login=${SONAR_TOKEN}
+ 
+    def dockerBuildAndPush(appName){
+        return {
+            // Existing artifact format: i27-eureka-0.0.1-SNAPSHOT.jar
+            // My Destination artifact format: i27-eureka-buildnumber-branchname.jar
+            echo "My JAR file SOURCE: i27-${env.APPLICATION_NAME}-${env.POM_VERSION}.${env.POM_PACKAGING}"
+            echo "My JAR Destination: i27-${env.APPLICATION_NAME}-${BUILD_NUMBER}-${BRANCH_NAME}.${env.POM_PACKAGING}"
+            sh """
+                echo "***********************Building Docker Image*************************"
+                pwd
+                ls -la
+                cp ${WORKSPACE}/target/i27-${env.APPLICATION_NAME}-${env.POM_VERSION}.${env.POM_PACKAGING}  ./.cicd
+                ls -la ./.cicd
+                docker build --no-cache --build-arg JAR_SOURCE=i27-${env.APPLICATION_NAME}-${env.POM_VERSION}.${env.POM_PACKAGING} -t ${env.DOCKER_HUB}/${env.APPLICATION_NAME}:${GIT_COMMIT} ./.cicd
+                # docker build -t imagename dockerfilepath
+                echo "***********************Login to Docker Registry*******************************"
+                # docker login -u username -p password
+                docker login -u ${DOCKER_CREDS_USR} -p ${DOCKER_CREDS_PSW}
+                # docker push image_name
+                docker push ${env.DOCKER_HUB}/${env.APPLICATION_NAME}:${GIT_COMMIT}
             """
-        }  
-        timeout (time: 2, unit: 'MINUTES'){
-            waitForQualityGate abortPipeline: true
         }
-    }   
-
+    }
 
 }
 
@@ -48,22 +54,22 @@ class Docker {
 // }
 
 //
-def sonar(){
-    return {
-        echo "Starting Sonar Scan"
-        withSonarQubeEnv('SonarQube'){  // The name you saved in system under manage jenkins
-            sh """
-            mvn sonar:sonar \
-                -Dsonar.projectkey=i27-eureka \
-                -Dsonar.host.url=${env.SONAR_URL} \
-                -Dsonar.login=${SONAR_TOKEN}
-            """
-        }  
-        timeout (time: 2, unit: 'MINUTES'){
-            waitForQualityGate abortPipeline: true
-        }
-    }
-}
+// def sonar(){
+//     return {
+//         echo "Starting Sonar Scan"
+//         withSonarQubeEnv('SonarQube'){  // The name you saved in system under manage jenkins
+//             sh """
+//             mvn sonar:sonar \
+//                 -Dsonar.projectkey=i27-eureka \
+//                 -Dsonar.host.url=${env.SONAR_URL} \
+//                 -Dsonar.login=${SONAR_TOKEN}
+//             """
+//         }  
+//         timeout (time: 2, unit: 'MINUTES'){
+//             waitForQualityGate abortPipeline: true
+//         }
+//     }
+// }
 
 // Method for docker build & push
 // def dockerBuildAndPush(){

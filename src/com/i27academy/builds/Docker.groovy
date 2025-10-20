@@ -7,13 +7,31 @@ class Docker {
         this.jenkins = jenkins
     }
 
-    // Application Build
+    // Application Build & Push
     def buildApp(appName){
         jenkins.sh """
             echo "Building the $appName Application"
             mvn clean package -DskipTests=true
         """  
     }
+
+    //
+    def sonar(appName){
+        return {
+            echo "Starting Sonar Scan"
+            withSonarQubeEnv('SonarQube'){  // The name you saved in system under manage jenkins
+                sh """
+                mvn sonar:sonar \
+                    -Dsonar.projectkey=i27-eureka \
+                    -Dsonar.host.url=${env.SONAR_URL} \
+                    -Dsonar.login=${SONAR_TOKEN}
+                """
+            }  
+            timeout (time: 2, unit: 'MINUTES'){
+                waitForQualityGate abortPipeline: true
+            }
+        }
+    }   
 
 
 }
@@ -32,22 +50,22 @@ class Docker {
 // }
 
 //
-// def sonar(){
-//     return {
-//         echo "Starting Sonar Scan"
-//         withSonarQubeEnv('SonarQube'){  // The name you saved in system under manage jenkins
-//             sh """
-//             mvn sonar:sonar \
-//                 -Dsonar.projectkey=i27-eureka \
-//                 -Dsonar.host.url=${env.SONAR_URL} \
-//                 -Dsonar.login=${SONAR_TOKEN}
-//             """
-//         }  
-//         timeout (time: 2, unit: 'MINUTES'){
-//             waitForQualityGate abortPipeline: true
-//         }
-//     }
-// }
+def sonar(){
+    return {
+        echo "Starting Sonar Scan"
+        withSonarQubeEnv('SonarQube'){  // The name you saved in system under manage jenkins
+            sh """
+            mvn sonar:sonar \
+                -Dsonar.projectkey=i27-eureka \
+                -Dsonar.host.url=${env.SONAR_URL} \
+                -Dsonar.login=${SONAR_TOKEN}
+            """
+        }  
+        timeout (time: 2, unit: 'MINUTES'){
+            waitForQualityGate abortPipeline: true
+        }
+    }
+}
 
 // Method for docker build & push
 // def dockerBuildAndPush(){

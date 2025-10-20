@@ -87,7 +87,7 @@ def call(Map pipelineParams){
                 }
                 steps {
                     script {
-                        docker.sonar("${env.APPLICATION_NAME}")
+                        docker.sonar("${env.APPLICATION_NAME}")  //appName
                     }
                 }
             }

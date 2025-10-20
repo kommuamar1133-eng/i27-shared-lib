@@ -20,11 +20,11 @@ class Docker {
         return {
             echo "Starting Sonar Scan"
             withSonarQubeEnv('SonarQube'){  // The name you saved in system under manage jenkins
-                sh """
-                mvn sonar:sonar \
-                    -Dsonar.projectkey=i27-eureka \
-                    -Dsonar.host.url=${env.SONAR_URL} \
-                    -Dsonar.login=${SONAR_TOKEN}
+                jenkins.sh """
+                    mvn sonar:sonar \
+                        -Dsonar.projectkey=i27-eureka \
+                        -Dsonar.host.url=${env.SONAR_URL} \
+                        -Dsonar.login=${SONAR_TOKEN}
                 """
             }  
             timeout (time: 2, unit: 'MINUTES'){
